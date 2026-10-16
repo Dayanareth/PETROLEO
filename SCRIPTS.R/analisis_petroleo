@@ -2,20 +2,32 @@ library(readxl)
 library(fpp3)
 library(tidyverse)
 
-base<-read_xlsx("../DATA/Datos petroleo.xlsx")
+#dataframe
+base <- as.data.frame(base)
 class(base)
 
-names(base)
+names(base) <- c("fecha", "precio_cierre", "apertura", "maximo",
+                 "minimo", "volumen", "var_pct")
 
-base_t<-base[, 1:2]
+base_t <- base |>
+  mutate(
+    fecha = ymd(fecha),
+    # "236,38K" -> 236380 ; "1,2M" -> 1200000 ; vacío -> NA
+    volumen = case_when(
+      is.na(volumen) | volumen == "" ~ NA_real_,
+      str_detect(volumen, "K$") ~ as.numeric(str_replace(str_remove(volumen, "K$"), ",", ".")) * 1e3,
+      str_detect(volumen, "M$") ~ as.numeric(str_replace(str_remove(volumen, "M$"), ",", ".")) * 1e6,
+      TRUE ~ as.numeric(str_replace(volumen, ",", "."))
+    )
+  ) |>
+  arrange(fecha)   # el Excel viene en orden descendente
 
-names(base_t)<-c("fecha", "precio_cierre")
 head(base_t)
 
-#transformación a tsibble
-base_nueva<- base_t |>
-  mutate(fecha = ymd(fecha)) |>
+#convertir a tsibble
+base_nueva <- base_t |>
   as_tsibble(index = fecha)
 
 head(base_nueva)
+count_gaps(base_nueva)
 
