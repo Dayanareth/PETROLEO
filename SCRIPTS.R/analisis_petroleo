@@ -1,0 +1,21 @@
+library(readxl)
+library(fpp3)
+library(tidyverse)
+
+base<-read_xlsx("../DATA/Datos petroleo.xlsx")
+class(base)
+
+names(base)
+
+base_t<-base[, 1:2]
+
+names(base_t)<-c("fecha", "precio_cierre")
+head(base_t)
+
+#transformación a tsibble
+base_nueva<- base_t |>
+  mutate(fecha = ymd(fecha)) |>
+  as_tsibble(index = fecha)
+
+head(base_nueva)
+
