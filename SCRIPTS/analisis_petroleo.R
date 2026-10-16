@@ -36,3 +36,8 @@ head(base_nueva)
 
 # 5. Revisar huecos (fines de semana y feriados)
 count_gaps(base_nueva)
+
+# Rellenar huecos explíticos
+base_completa <- base_nueva |>
+  fill_gaps() |>
+  fill(precio_cierre, apertura, maximo, minimo, .direction = "down")
